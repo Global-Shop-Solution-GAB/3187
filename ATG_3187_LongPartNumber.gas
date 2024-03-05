@@ -1,0 +1,407 @@
+Program.Sub.ScreenSU.Start
+gui.AddPart..create
+gui.AddPart..caption("Add Long Part Number")
+gui.AddPart..size(4260,1545)
+gui.AddPart..position(0,0)
+gui.AddPart..event(unload,End)
+gui.AddPart..alwaysontop(False)
+gui.AddPart..fontname("Arial")
+gui.AddPart..fontsize(8)
+gui.AddPart..forecolor(0)
+gui.AddPart..fontstyle(False,False,False,False,False)
+gui.AddPart..BackColor(-2147483633)
+gui.AddPart..controlbox(True)
+gui.AddPart..maxbutton(True)
+gui.AddPart..minbutton(True)
+gui.AddPart..mousepointer(0)
+gui.AddPart..moveable(True)
+gui.AddPart..sizeable(True)
+gui.AddPart..ShowInTaskBar(True)
+gui.AddPart..titlebar(True)
+gui.AddPart.Part.create(textbox)
+gui.AddPart.Part.text("")
+gui.AddPart.Part.visible(True)
+gui.AddPart.Part.size(2190,315)
+gui.AddPart.Part.zorder(0)
+gui.AddPart.Part.position(635,170)
+gui.AddPart.Part.enabled(True)
+gui.AddPart.Part.alignment(0)
+gui.AddPart.Part.fontname("Arial")
+gui.AddPart.Part.fontsize(8)
+gui.AddPart.Part.maxLength(40)
+gui.AddPart.Part.BackColor(-2147483643)
+gui.AddPart.rev.create(textbox)
+gui.AddPart.rev.text("")
+gui.AddPart.rev.visible(True)
+gui.AddPart.rev.size(630,315)
+gui.AddPart.rev.zorder(0)
+gui.AddPart.rev.position(3275,155)
+gui.AddPart.rev.enabled(True)
+gui.AddPart.rev.alignment(0)
+gui.AddPart.rev.fontname("Arial")
+gui.AddPart.rev.fontsize(8)
+gui.AddPart.rev.maxLength(15)
+gui.AddPart.rev.BackColor(-2147483643)
+gui.AddPart.lbl1.create(label)
+gui.AddPart.lbl1.caption("Part")
+gui.AddPart.lbl1.backstyle(0)
+gui.AddPart.lbl1.visible(True)
+gui.AddPart.lbl1.size(1095,255)
+gui.AddPart.lbl1.zorder(1)
+gui.AddPart.lbl1.position(200,200)
+gui.AddPart.lbl1.enabled(True)
+gui.AddPart.lbl1.alignment(0)
+gui.AddPart.lbl1.fontname("Arial")
+gui.AddPart.lbl1.fontsize(8)
+gui.AddPart.lbl1.BackColor(-2147483633)
+gui.AddPart.lbl2.create(label)
+gui.AddPart.lbl2.caption("Rev")
+gui.AddPart.lbl2.backstyle(0)
+gui.AddPart.lbl2.visible(True)
+gui.AddPart.lbl2.size(1095,255)
+gui.AddPart.lbl2.zorder(1)
+gui.AddPart.lbl2.position(2930,200)
+gui.AddPart.lbl2.enabled(True)
+gui.AddPart.lbl2.alignment(0)
+gui.AddPart.lbl2.fontname("Arial")
+gui.AddPart.lbl2.fontsize(8)
+gui.AddPart.lbl2.BackColor(-2147483633)
+gui.AddPart.AddPart.create(button)
+gui.AddPart.AddPart.caption("Add Part")
+gui.AddPart.AddPart.visible(True)
+gui.AddPart.AddPart.size(975,375)
+gui.AddPart.AddPart.zorder(0)
+gui.AddPart.AddPart.position(245,575)
+gui.AddPart.AddPart.enabled(True)
+gui.AddPart.AddPart.fontname("Arial")
+gui.AddPart.AddPart.fontsize(8)
+gui.AddPart.AddPart.event(click,Add)
+gui.AddPart.Part.tabstop(True)
+gui.AddPart.Part.tabindex(1)
+gui.AddPart.rev.tabstop(True)
+gui.AddPart.rev.tabindex(2)
+gui.AddPart.AddPart.tabstop(True)
+gui.AddPart.AddPart.tabindex(3)
+
+
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Add Long Part number
+'Uses Hooks 10120 & 17380 with updated INV010P
+'INV010CP copy 13310
+'Exit hook 10180
+'10185
+'script 1 10210
+V.Local.part.Declare(String)
+V.Local.rev.Declare(String)
+V.Local.sSql.Declare(String)
+
+	F.Intrinsic.Control.If(V.Caller.Hook,=,"10120")
+		V.Passed.000068.Set("Add Part")
+	F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Connection1.Openconnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+
+
+'GS Part Number
+V.Global.GSPart.Declare(String)
+'GS REV Number
+V.Global.GSREV.Declare(String)
+
+'Check if Inventory Main. New Part
+F.Intrinsic.Control.If(V.Caller.Hook,<>,"17380")
+	F.Intrinsic.Control.If(V.Caller.Switches,=,"N")
+		F.Intrinsic.Control.If(V.Caller.Hook,=,"10185")
+			F.Intrinsic.Control.CallSub(End)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.If(V.Caller.Hook,=,"10180")
+			F.Intrinsic.Control.CallSub(Delete)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.000008,"LOCK",1)
+		F.Intrinsic.UI.ChangeCallerProperty(V.Passed.000007,"LOCK",1)
+		F.Intrinsic.Control.If(V.Passed.000007.Trim,<>,"")
+			F.Intrinsic.UI.Msgbox("Part not saved!","Part not saved!")
+			F.Intrinsic.Control.End
+		F.Intrinsic.Control.EndIf
+		Gui.AddPart..Show
+	F.Intrinsic.Control.Elseif(V.Caller.Switches,=,"O")
+	F.Intrinsic.Control.End
+	F.Intrinsic.Control.ElseIf(V.Caller.Switches,=,"D")
+		F.Intrinsic.Control.If(V.Caller.Hook,=,"10185")
+			F.Intrinsic.Control.CallSub("Delete")
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.If(V.Caller.Hook,=,"10180")
+			F.Intrinsic.Control.CallSub(End)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.If(V.Caller.Hook,=,"10120")
+			F.Intrinsic.Control.CallSub(End)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,"13310")
+		F.Intrinsic.Control.CallSub(Copy)
+	F.Intrinsic.Control.ElseIf(V.Caller.Switches,=,"C")
+		F.Intrinsic.Control.If(V.Caller.Hook,=,"10185")
+			F.Intrinsic.Control.CallSub(End)
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.If(V.Caller.Hook,=,"10180")
+			F.Intrinsic.Control.CallSub(End)
+		F.Intrinsic.Control.EndIf
+
+		Gui.AddPart..Show
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.If(V.Caller.Hook,=,"10120")
+			F.Intrinsic.Control.End
+		F.Intrinsic.Control.elseIf(V.Caller.Hook,=,"10180")
+			F.Intrinsic.Control.End
+		F.Intrinsic.Control.Else
+			F.Intrinsic.Control.CallSub("Browser")
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.CallSub("Browser")
+F.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+Program.Sub.Add.Start
+'SQL String
+V.Local.sSQL.Declare(String)
+'When parts exists value is false
+V.Local.LPartNotExists.Declare(Boolean)
+'Length of Long part entered.
+V.Local.LengthPart.Declare(Long)
+'Length of Long rev enetred.
+V.Local.LengthREV.Declare(Long)
+'Gs Part Number
+V.Local.part.Declare(String)
+V.Local.rev.Declare(String)
+
+'Check part for null value.
+F.Intrinsic.Control.If(V.Screen.AddPart!Part.Text,<>,"")
+	
+	'Query Database to check if part exists.
+	F.Intrinsic.String.Concat("SELECT * FROM ATG_LONG_PART WHERE LPART='",V.Screen.AddPart!Part.Text,"' ","AND LREV='",V.Screen.AddPart!rev.Text,"'",V.Local.sSQL)
+	F.ODBC.Connection!Connection1.OpenRecordsetRO("r",V.Local.sSQL)
+	V.Local.LPartNotExists.Set(V.Odbc.Connection1!r.EOF)
+	
+	'If part does not exist add new part to database.
+	F.Intrinsic.Control.If(V.Local.LPartNotExists,=,True)
+		'Get Lengths of part and rev
+		F.Intrinsic.String.Len(V.Screen.AddPart!Part.Text,V.Local.Lengthpart)
+		F.Intrinsic.String.Len(V.Screen.AddPart!rev.Text,V.Local.LengthREV)
+		'Check if part is a long part or rev
+		F.Intrinsic.Control.If(V.Local.Lengthpart,>,17)
+			F.Intrinsic.Control.CallSub("Generate")
+		F.Intrinsic.Control.ElseIf(V.Local.LengthREV,>,3)
+			F.Intrinsic.Control.CallSub("Generate")
+		F.Intrinsic.Control.Else
+			V.Global.GSPart.Set(V.Screen.AddPart!Part.Text)
+			V.Global.GSREV.Set(V.Screen.AddPart!Rev.text)
+		F.Intrinsic.Control.EndIf
+		
+		F.Intrinsic.String.RPad(V.Global.GSPart," ",17,V.Local.part)
+		F.Intrinsic.String.RPad(V.Global.GSREV," ",3,V.Local.rev)
+		F.Intrinsic.String.Concat(V.Local.part,V.Local.rev,V.Local.part)
+		F.Intrinsic.Control.If(V.Caller.Switches,=,"C")
+			F.Intrinsic.String.RPad(V.Passed.000007," ",17,V.Local.part)
+			F.Intrinsic.String.RPad(V.Passed.000008," ",3,V.Local.rev)
+			F.Intrinsic.String.Concat(V.Local.part,V.Local.rev,V.Local.part)
+		F.Intrinsic.Control.EndIf
+
+
+		'Insert new part into long part cross reference database
+		F.Intrinsic.String.Concat("INSERT INTO ATG_LONG_PART ( PART,LPART,LREV) VALUES('",V.Local.part,"','",V.Screen.AddPart!Part.Text,"' ,'",V.Screen.AddPart!rev.Text,"') ",V.Local.sSQL)
+		F.ODBC.Connection!Connection1.Execute(V.Local.sSQL)
+		'Pass GS Part number back to inventory maint. screen
+		F.Intrinsic.Control.If(V.Caller.Switches,<>,"C")
+			V.Passed.000007.Set(V.Global.GSPart)
+			V.Passed.000008.Set(V.Global.GSREV)
+		F.Intrinsic.Control.EndIf
+		V.Passed.000005.Set(V.Screen.AddPart!Part.Text)
+		V.Passed.000044.Set(V.Screen.AddPart!rev.Text)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.UI.Msgbox("Part Exists.  Please enter a new part.")
+	F.Intrinsic.Control.EndIf
+F.ODBC.Connection!Connection1.close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub("End")
+
+
+
+
+Program.Sub.Add.End
+
+Program.Sub.End.Start
+
+F.Intrinsic.Control.End
+F.ODBC.Connection!Connection1.close
+
+Program.Sub.End.End
+
+Program.Sub.Generate.Start
+V.Local.sSql.Declare(String)
+V.Local.x.Declare(Long)
+V.Local.zero.Declare(String)
+V.Local.zero.Set("0")
+V.Local.x.Set(1)
+V.Local.part.Declare(String)
+V.Local.rev.Declare(String)
+
+'Check if Long Part name exists if yes then skip to rev increment
+F.Intrinsic.String.Concat("SELECT * FROM ATG_LONG_PART WHERE LPART='",V.Screen.AddPart!Part.Text,"' ",V.Local.sSQL)
+	F.ODBC.Connection!Connection1.OpenRecordsetRO("r3",V.Local.sSQL)
+F.Intrinsic.Control.If(V.Odbc.Connection1!r3.EOF,=,True)
+
+	'Get Partial part number for GS Part.
+	F.Intrinsic.String.Left(V.Screen.AddPart!Part.Text,12,V.Global.GSPart)
+	'Check if tuncated part is already created.
+	F.Intrinsic.String.Concat("Select * From ATG_LONG_PART Where PART like'",V.Global.GSPart,"1%'",V.Local.sSql)
+	F.ODBC.Connection!Connection1.OpenRecordsetRO("r1",V.Local.sSql)
+	'Increment through like GS part numbers until unique part is found.
+	F.Intrinsic.Control.DoUntil(V.Odbc.Connection1!r1.EOF,=,True)
+		F.Intrinsic.Math.Add(V.Local.x,1,V.Local.x)
+
+		F.ODBC.Connection1!r1.Close
+		F.Intrinsic.String.Concat("Select * From ATG_LONG_PART Where PART like'",V.Global.GSPart,V.Local.x,"%'",V.Local.sSql)
+		F.ODBC.Connection!Connection1.OpenRecordsetRO("r1",V.Local.sSql)
+	F.Intrinsic.Control.Loop
+	'Return Final GS Part Number
+	F.Intrinsic.String.Concat(V.Global.GSPart,V.Local.x,V.Global.GSPart)
+F.Intrinsic.Control.Else
+	'If Long Part exists use existing GS Part number from table
+	V.Global.GSPart.Set(V.Odbc.Connection1!r3.FieldVal!PART)
+F.Intrinsic.Control.EndIf
+
+'Initialize GS Part REV
+V.Global.GSREV.Set(V.Screen.AddPart!rev.Text)
+
+'If Rev is not null
+F.Intrinsic.Control.If(V.Global.GSREV,<>,"")
+
+	'Get partial rev for GS Rev
+	F.Intrinsic.String.Left(V.Global.GSREV,1,V.Global.GSREV)
+	'Check if part and rev already exist
+
+	F.Intrinsic.String.RPad(V.Global.GSPart," ",17,V.Local.part)
+		F.Intrinsic.String.concat(V.Global.GSREV,"01",V.Local.rev)
+		F.Intrinsic.String.Concat(V.Local.part,V.Local.rev,V.Local.part)
+
+
+	F.Intrinsic.String.Concat("Select * From ATG_LONG_PART Where PART='",V.Local.Part,"'",V.Local.sSql)
+	F.ODBC.Connection!Connection1.OpenRecordsetRO("r2",V.Local.sSql)
+	V.Local.x.Set(1)
+	'Increment through rev numbers until unique rev is found.
+	F.Intrinsic.Control.DoUntil(V.Odbc.Connection1!r2.EOF,=,True)
+		F.Intrinsic.Math.Add(V.Local.x,1,V.Local.x)
+		'Remove leading zero for revs above 9
+		F.Intrinsic.Control.If(V.Local.x,>,9)
+			V.Local.zero.Set("")
+		F.Intrinsic.Control.EndIf
+		F.ODBC.Connection1!r2.Close
+
+	F.Intrinsic.String.RPad(V.Global.GSPart," ",17,V.Local.part)
+		F.Intrinsic.String.concat(V.Global.GSREV,V.Local.zero,V.Local.x,V.Local.rev)
+		F.Intrinsic.String.Concat(V.Local.part,V.Local.rev,V.Local.part)
+
+		F.Intrinsic.String.Concat("Select * From ATG_LONG_PART Where PART='",V.Local.part,"'",V.Local.sSql)
+		F.ODBC.Connection!Connection1.OpenRecordsetRO("r2",V.Local.sSql)
+	F.Intrinsic.Control.Loop
+	'Return final Rev
+	F.Intrinsic.String.Concat(V.Global.GSREV,V.Local.zero,V.Local.x,V.Global.GSREV)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+Program.Sub.Generate.End
+
+Program.Sub.Browser.Start
+V.Local.widths.Declare(String)
+V.Local.titles.Declare(String)
+V.Local.results.Declare(String)
+V.Local.cancel.Declare(Long)
+V.Local.part.Declare(String)
+
+
+F.Intrinsic.String.Split("PART*!* LONG PART*!*LONG REV*!*DESCRIPTION","*!*",V.Local.titles)
+F.Intrinsic.String.Split("0*!*3000*!*1000*!*3000","*!*",V.Local.widths)
+'Uses custom view to separate Rev and Part
+
+F.Intrinsic.UI.Browser("Select a Inventory Part","connection1","Select ATG_LONG_PART.PART,ATG_LONG_PART.LPART,ATG_LONG_PART.LREV,V_INVENTORY_MSTR.DESCRIPTION from ATG_LONG_PART, V_INVENTORY_MSTR WHERE ATG_LONG_PART.PART = V_INVENTORY_MSTR.PART  ORDER BY LPART,LREV",V.Local.titles,V.Local.widths,8000,6000,V.Local.results)
+F.Intrinsic.String.Split(V.Local.results,"*!*",V.Local.results)
+
+'If browser is canceled do not pass back values
+F.Intrinsic.String.Instr(V.Local.results,"***CANCEL***",1,V.Local.cancel)
+F.Intrinsic.Control.If(V.Local.cancel,=,0)
+
+	V.Passed.009001.Set(V.Local.results(0))
+F.Intrinsic.Control.EndIf
+	V.Passed.777777.Set(1)
+F.Intrinsic.Control.CallSub("End")
+
+
+Program.Sub.Browser.End
+
+Program.Sub.Delete.Start
+V.Local.sSQL.Declare(String)
+V.Local.widths.Declare(String)
+V.Local.titles.Declare(String)
+V.Local.results.Declare(String)
+V.Local.cancel.Declare(Long)
+V.Local.part.Declare(String)
+V.Local.rev.Declare(String)
+
+
+
+V.local.part.set(V.Passed.000007)
+V.local.rev.set(V.Passed.000008)
+
+F.Intrinsic.String.RPad(V.Local.part," ",17,V.Local.part)
+F.Intrinsic.String.RPad(V.Local.rev," ",3,V.Local.rev)
+
+F.Intrinsic.String.Concat(V.Local.part,V.Local.rev,V.Local.part)
+
+	'Delete part from table
+F.Intrinsic.String.Concat("DELETE FROM ATG_LONG_PART WHERE PART='",V.Local.part,"' ",V.Local.sSQL)
+	F.ODBC.Connection!Connection1.Execute(V.Local.sSQL)
+
+
+F.Intrinsic.Control.CallSub("End")
+
+Program.Sub.Delete.End
+
+Program.Sub.Copy.Start
+
+V.Local.widths.Declare(String)
+V.Local.titles.Declare(String)
+V.Local.results.Declare(String)
+V.Local.cancel.Declare(Long)
+V.Local.part.Declare(String)
+V.Local.rev.Declare(String)
+
+F.Intrinsic.String.Split("PART*!* LONG PART*!*LONG REV*!*DESCRIPTION","*!*",V.Local.titles)
+F.Intrinsic.String.Split("0*!*3000*!*1000*!*3000","*!*",V.Local.widths)
+'Uses custom view to separate Rev and Part
+F.Intrinsic.UI.Browser("Select a Inventory Part","connection1","Select ATG_LONG_PART.PART,ATG_LONG_PART.LPART,ATG_LONG_PART.LREV,V_INVENTORY_MSTR.DESCRIPTION from ATG_LONG_PART, V_INVENTORY_MSTR WHERE ATG_LONG_PART.PART = V_INVENTORY_MSTR.PART  ORDER BY LPART,LREV",V.Local.titles,V.Local.widths,8000,6000,V.Local.results)
+F.Intrinsic.String.Split(V.Local.results,"*!*",V.Local.results)
+
+'If browser is canceled do not pass back values
+F.Intrinsic.String.Instr(V.Local.results,"***CANCEL***",1,V.Local.cancel)
+F.Intrinsic.Control.If(V.Local.cancel,=,0)
+	F.Intrinsic.String.RPad(V.Local.results(0)," ",20,V.Local.results(0))
+	F.Intrinsic.String.Left(V.Local.results(0),17,V.Local.part)
+	F.Intrinsic.String.Right(V.Local.results(0),3,V.Local.rev)
+	V.Passed.000008.Set(V.Local.Part)
+	V.Passed.000009.Set(V.Local.Rev)
+F.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.Control.CallSub("End")
+
+Program.Sub.Copy.End
+
+
